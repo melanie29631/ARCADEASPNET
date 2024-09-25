@@ -1,0 +1,84 @@
+﻿<h2>Juego Snake</h2>
+<canvas id="gameCanvas" width="400" height="400" style="border:1px solid black;"></canvas>
+<p>Puntaje: <span id="score">0</span></p>
+<button id="guardarPuntaje">Guardar Puntaje</button>
+
+<script>
+    var canvas = document.getElementById("gameCanvas");
+    var ctx = canvas.getContext("2d");
+    var gridSize = 20; // Tamaño de la cuadrícula
+    var snake = [{x: 200, y: 200}]; // Inicializamos la serpiente en el centro
+    var direction = {x: 0, y: 0};
+    var apple = spawnApple();
+    var score = 0;
+
+    // Detectar las teclas para controlar la dirección
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "ArrowUp" && direction.y === 0) direction = {x: 0, y: -gridSize};
+        if (e.key === "ArrowDown" && direction.y === 0) direction = {x: 0, y: gridSize};
+        if (e.key === "ArrowLeft" && direction.x === 0) direction = {x: -gridSize, y: 0};
+        if (e.key === "ArrowRight" && direction.x === 0) direction = {x: gridSize, y: 0};
+    });
+
+    function gameLoop() {
+        // Mover la cabeza de la serpiente
+        var newX = snake[0].x + direction.x;
+        var newY = snake[0].y + direction.y;
+
+        // Verificar si la serpiente sale de los bordes del canvas o se come a sí misma
+        if (newX < 0 || newX >= canvas.width || newY < 0 || newY >= canvas.height || 
+            snake.slice(1).some(p => p.x === newX && p.y === newY)) {
+            alert("Game Over! Puntaje: " + score);
+            clearInterval(gameInterval);
+            return;
+        }
+
+        // Añadir nueva cabeza de la serpiente
+        snake.unshift({x: newX, y: newY});
+
+        // Verificar si la serpiente come la manzana
+        if (newX === apple.x && newY === apple.y) {
+            score++;
+            apple = spawnApple(); // Generar una nueva manzana
+        } else {
+            snake.pop(); // Quitar la cola si no comió la manzana
+        }
+
+        // Limpiar el canvas y dibujar nuevamente
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawSnake();
+        drawApple();
+        document.getElementById("score").textContent = score;
+    }
+
+    // Función para generar una nueva manzana en una posición aleatoria
+    function spawnApple() {
+        var appleX = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
+        var appleY = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
+        return {x: appleX, y: appleY};
+    }
+
+    // Función para dibujar la serpiente
+    function drawSnake() {
+        ctx.fillStyle = "green";
+        snake.forEach(function(part) {
+            ctx.fillRect(part.x, part.y, gridSize, gridSize);
+        });
+    }
+
+    // Función para dibujar la manzana
+    function drawApple() {
+        ctx.fillStyle = "red";
+        ctx.fillRect(apple.x, apple.y, gridSize, gridSize);
+    }
+
+    // Iniciar el ciclo del juego
+    var gameInterval = setInterval(gameLoop, 150);
+
+    // Guardar el puntaje
+    document.getElementById("guardarPuntaje").addEventListener("click", function() {
+        $.post('/Home/GuardarPunteo', { puntaje: score }, function(data) {
+            alert(data.message);
+        });
+    });
+</script>

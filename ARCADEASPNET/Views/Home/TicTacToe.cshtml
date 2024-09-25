@@ -1,0 +1,59 @@
+﻿<h2>Juego Tic Tac Toe</h2>
+<div id="ticTacToeBoard">
+    <button class="cell" data-index="0"></button>
+    <button class="cell" data-index="1"></button>
+    <button class="cell" data-index="2"></button><br>
+    <button class="cell" data-index="3"></button>
+    <button class="cell" data-index="4"></button>
+    <button class="cell" data-index="5"></button><br>
+    <button class="cell" data-index="6"></button>
+    <button class="cell" data-index="7"></button>
+    <button class="cell" data-index="8"></button>
+</div>
+
+<p>Resultado: <span id="resultado"></span></p>
+<button id="reiniciar">Reiniciar</button>
+
+<script>
+    var turno = "X";
+    var celdas = document.querySelectorAll(".cell");
+    var board = ["", "", "", "", "", "", "", "", ""];
+
+    celdas.forEach(function (cell) {
+        cell.addEventListener("click", function () {
+            var index = this.getAttribute("data-index");
+            if (board[index] === "") {
+                board[index] = turno;
+                this.textContent = turno;
+                if (checkWinner()) {
+                    document.getElementById("resultado").textContent = turno + " gana!";
+                } else if (board.every(function (cell) { return cell !== ""; })) {
+                    document.getElementById("resultado").textContent = "Empate!";
+                }
+                turno = turno === "X" ? "O" : "X";
+            }
+        });
+    });
+
+    function checkWinner() {
+        var combos = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+        return combos.some(function (combo) {
+            return combo.every(function (index) {
+                return board[index] === turno;
+            });
+        });
+    }
+
+    document.getElementById("reiniciar").addEventListener("click", function () {
+        board = ["", "", "", "", "", "", "", "", ""];
+        celdas.forEach(function (cell) {
+            cell.textContent = "";
+        });
+        document.getElementById("resultado").textContent = "";
+        turno = "X";
+    });
+</script>
